@@ -68,6 +68,7 @@ config.h.in
 script/generic
 script/dog
 script/sheepdog
+script/sheepdog.service
 
 tests/check.log
 tests/check.time
@@ -81,3 +82,5 @@ man/dog.8
 man/sheepfs.8
 
 *.deb
+
+compile

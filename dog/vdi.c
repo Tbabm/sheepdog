@@ -1569,13 +1569,14 @@ static int vdi_write(int argc, char **argv)
 	uint64_t offset = 0, oid, old_oid, done = 0, total = (uint64_t) -1;
 	unsigned int len;
 	char *buf = NULL;
-	bool create;
+	bool create, with_total = false;
 
 	if (argv[optind]) {
 		ret = option_parse_size(argv[optind++], &offset);
 		if (ret < 0)
 			return EXIT_USAGE;
 		if (argv[optind]) {
+			with_total = true;
 			ret = option_parse_size(argv[optind++], &total);
 			if (ret < 0)
 				return EXIT_USAGE;
@@ -1621,9 +1622,17 @@ static int vdi_write(int argc, char **argv)
 			ret = EXIT_SYSFAIL;
 			goto out;
 		} else if (ret < len) {
-			/* exit after this buffer is sent */
-			memset(buf + ret, 0, len - ret);
-			total = done + len;
+			if (!with_total) {
+				if (ret == 0) {
+					total = done;
+					break;
+				} else {
+					/* exit after this buffer is sent */
+					len = ret;
+					total = done + len;
+				}
+			} else
+				memset(buf + ret, 0, len - ret);
 		}
 
 		sd_inode_set_vid(inode, idx, inode->vdi_id);
